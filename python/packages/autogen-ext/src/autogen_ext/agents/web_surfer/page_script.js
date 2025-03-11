@@ -23,6 +23,41 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
       "textarea": "textbox"
   };
 
+  let isScroller = function(node, threshold = 8) {
+    return node.scrollHeight - node.clientHeight >= threshold;
+  };
+
+  let isScrollingRegionRole = function(ariaRole) {
+    return ["region_up_down", "region_down", "region_up"].includes(ariaRole);
+  }
+
+  let getRegionScrollRole = function(directions) {
+    if (directions.canScrollUp && directions.canScrollDown) {
+        return "region_up_down";
+    } else if (directions.canScrollDown) {
+        return "region_down";
+    } else if (directions.canScrollUp) {
+        return "region_up";
+    }
+    return "";
+  };
+
+  let getScrollDirections = function(node) {
+    let directions = {
+        canScrollUp: false,
+        canScrollDown: false
+    };
+
+    if (node.scrollTop > 0) {
+        directions.canScrollUp = true;
+    }
+    if (node.scrollTop + node.clientHeight < node.scrollHeight) {
+        directions.canScrollDown = true;
+    }
+
+    return directions;
+  };
+
   let getCursor = function(elm) {
       return window.getComputedStyle(elm)["cursor"];
   };
@@ -54,6 +89,13 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
       nodeList = document.querySelectorAll("*");
       for (let i=0; i<nodeList.length; i++) {
          let node = nodeList[i];
+         const isScrollable = isScroller(node);
+         if (isScrollable) {
+             if (results.indexOf(node) === -1) {
+                 results.push(node);
+             }
+             continue;
+         }
 
          // Cursor is default, or does not suggest interactivity
          let cursor = getCursor(node);
@@ -122,7 +164,19 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
       return text.trim();
   };
 
-  let getApproximateAriaName = function(element) {
+    let getScrollRegionAriaName = function(element, ariaRole) {
+        const content = trimmedInnerText(element);
+        const dirsAvailable = ariaRole.replace("region_", "");
+
+        if (content) {
+            return "Scrollable region which can scroll " + dirsAvailable + " (" + content.substring(0, 60) + (content.length > 60 ? "...)" : ")");
+        }
+        return "Scrollable region which can scroll " + dirsAvailable;
+    };
+
+  let getApproximateAriaName = function(element, ariaRole) {
+      const isScrollRegion = isScrollingRegionRole(ariaRole);
+
       // Check for aria labels
       if (element.hasAttribute("aria-labelledby")) {
           let buffer = "";
@@ -167,6 +221,10 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
 	  return element.getAttribute("title")
       }
 
+      if (isScrollRegion) {
+        return getScrollRegionAriaName(element, ariaRole)
+      }
+
       return trimmedInnerText(element);
   };
 
@@ -183,7 +241,12 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
           return [roleMapping[tag], tag];
       }
       else {
-	  return ["", tag];
+        const isScrollable = isScroller(element);
+        const regionType = getRegionScrollRole(getScrollDirections(element))
+        if (isScrollable) {
+            return [regionType, tag];
+        }
+	    return ["", tag];
       }
   };
 
@@ -194,9 +257,9 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
       for (let i=0; i<elements.length; i++) {
          let key = elements[i].getAttribute("__elementId");
          let rects = elements[i].getClientRects();
+	 let vScrollable = isScroller(elements[i]);
 	 let ariaRole = getApproximateAriaRole(elements[i]);
-	 let ariaName = getApproximateAriaName(elements[i]);
-	 let vScrollable = elements[i].scrollHeight - elements[i].clientHeight >= 1;
+	 let ariaName = getApproximateAriaName(elements[i], ariaRole[0]);
 
 	 let record = {
              "tag_name": ariaRole[1],

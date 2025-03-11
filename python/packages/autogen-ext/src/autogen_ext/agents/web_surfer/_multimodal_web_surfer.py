@@ -56,6 +56,8 @@ from ._tool_definitions import (
     TOOL_HOVER,
     TOOL_READ_PAGE_AND_ANSWER,
     TOOL_SCROLL_DOWN,
+    TOOL_SCROLL_ELEMENT_DOWN,
+    TOOL_SCROLL_ELEMENT_UP,
     TOOL_SCROLL_UP,
     TOOL_SLEEP,
     TOOL_SUMMARIZE_PAGE,
@@ -279,6 +281,8 @@ class MultimodalWebSurfer(BaseChatAgent, Component[MultimodalWebSurferConfig]):
             TOOL_HISTORY_BACK,
             TOOL_CLICK,
             TOOL_TYPE,
+            TOOL_SCROLL_ELEMENT_UP,
+            TOOL_SCROLL_ELEMENT_DOWN,
             TOOL_READ_PAGE_AND_ANSWER,
             TOOL_SUMMARIZE_PAGE,
             TOOL_SLEEP,
@@ -867,6 +871,13 @@ class MultimodalWebSurfer(BaseChatAgent, Component[MultimodalWebSurferConfig]):
                 actions = ['"click", "hover"']
                 if rects[r]["role"] in ["textbox", "searchbox", "search"]:
                     actions = ['"input_text"']
+                if rects[r]["role"].startswith("region_"):
+                    if rects[r]["role"] == "region_up_down":
+                        actions = ['"scroll_element_up", "scroll_element_down"']
+                    if rects[r]["role"] == "region_up":
+                        actions = ['"scroll_element_up"']
+                    if rects[r]["role"] == "region_down":
+                        actions = ['"scroll_element_down"']
                 actions_str = "[" + ",".join(actions) + "]"
 
                 targets.append(f'{{"id": {r}, "name": "{aria_name}", "role": "{aria_role}", "tools": {actions_str} }}')

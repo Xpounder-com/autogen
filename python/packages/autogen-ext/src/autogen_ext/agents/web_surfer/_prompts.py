@@ -1,7 +1,10 @@
 WEB_SURFER_TOOL_PROMPT_MM = """
 {state_description}
 
-Consider the following screenshot of the page. In this screenshot, interactive elements are outlined in bounding boxes of different colors. Each bounding box has a numeric ID label in the same color. Additional information about each visible label is listed below:
+Consider the following screenshot of the page. In this screenshot, interactive elements are outlined in bounding boxes of different colors.
+Scrollable regions have black dashed outline, others interactive elements have solid colored outline. Some scrollable regions can be scrolled up or down, some just down, and some just up.
+Each bounding box has a numeric ID label in the same color..
+Additional information about each visible label is listed below:
 
 {visible_targets}{other_targets_str}{focused_hint}
 
