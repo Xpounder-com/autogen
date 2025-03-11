@@ -169,7 +169,7 @@ var MultimodalWebSurfer = MultimodalWebSurfer || (function() {
         const dirsAvailable = ariaRole.replace("region_", "");
 
         if (content) {
-            return "Scrollable region which can scroll " + dirsAvailable + " (" + content.substring(0, 60) + (content.length > 60 ? "...)" : ")");
+            return "Scrollable region which can scroll " + dirsAvailable + " (inner text: " + content.substring(0, 60) + (content.length > 60 ? "...)" : ")");
         }
         return "Scrollable region which can scroll " + dirsAvailable;
     };
