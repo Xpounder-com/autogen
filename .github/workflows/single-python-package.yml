@@ -38,8 +38,7 @@ jobs:
           version: "0.5.18"
       - name: Update package name in pyproject.toml
         run: |
-          sed -i 's/name = "autogen-ext"/name = "xpounder-autogen-ext"/g' python/packages/${{ github.event.inputs.package }}/pyproject.toml
-          grep "name = " python/packages/${{ github.event.inputs.package }}/pyproject.toml
+          sed -i 's/name = "${{ github.event.inputs.package }}"/name = "xpounder-${{ github.event.inputs.package }}"/g' python/packages/${{ github.event.inputs.package }}/pyproject.toml
       - run: uv build --package xpounder-${{ github.event.inputs.package }} --out-dir dist/
         working-directory: python
       - name: Publish package to PyPI
